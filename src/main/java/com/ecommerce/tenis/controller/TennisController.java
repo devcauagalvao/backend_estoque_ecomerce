@@ -5,8 +5,15 @@ import com.ecommerce.tenis.service.TennisService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tennis")
@@ -14,12 +21,11 @@ import java.util.List;
 public class TennisController {
 
     private final TennisService service;
+    private final String uploadDir = "uploads";  
 
- 
     public TennisController(TennisService service) {
         this.service = service;
     }
-
 
     @GetMapping
     public ResponseEntity<List<Tennis>> listarTodos() {
@@ -27,21 +33,42 @@ public class TennisController {
         return ResponseEntity.ok(tenisList);  
     }
 
-  
     @PostMapping
-    public ResponseEntity<Tennis> cadastrar(@RequestBody Tennis tennis) {
-        if (tennis == null) {
-            return ResponseEntity.badRequest().build(); 
-        }
+public ResponseEntity<Tennis> cadastrar(@RequestParam("nome") String nome,
+                                        @RequestParam("numero") int numero,
+                                        @RequestParam("cor") String cor,
+                                        @RequestParam("preco") double preco,
+                                        @RequestParam("estoque") int estoque,
+                                        @RequestParam("imagem") MultipartFile imagem) {
+    try {
         
-        Tennis novoTennis = service.cadastrar(tennis);  
-        
-        if (novoTennis != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(novoTennis);  
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();  
+        String fileName = UUID.randomUUID().toString() + "-" + imagem.getOriginalFilename();
+        Path path = Paths.get(uploadDir + "/" + fileName);
+
+        File directory = new File(uploadDir);
+        if (!directory.exists()) {
+            directory.mkdirs();
         }
+
+        Files.copy(imagem.getInputStream(), path);
+
+        Tennis novoTennis = new Tennis();
+        novoTennis.setNome(nome);
+        novoTennis.setNumero(numero);
+        novoTennis.setCor(cor);
+        novoTennis.setPreco(preco);
+        novoTennis.setEstoque(estoque);
+        novoTennis.setImagem(uploadDir + "/" + fileName); 
+
+        Tennis tenisCadastrado = service.cadastrar(novoTennis);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(tenisCadastrado);
+    } catch (IOException e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
+}
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
