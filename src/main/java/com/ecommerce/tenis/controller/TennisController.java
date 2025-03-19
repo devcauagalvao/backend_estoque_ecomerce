@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tennis")
-@CrossOrigin(origins = "http://localhost:3000")  
+@CrossOrigin(origins = "http://localhost:3000")
 public class TennisController {
 
     private final TennisService service;
@@ -30,53 +30,55 @@ public class TennisController {
     @GetMapping
     public ResponseEntity<List<Tennis>> listarTodos() {
         List<Tennis> tenisList = service.listarTodos();
-        return ResponseEntity.ok(tenisList);  
+        return ResponseEntity.ok(tenisList);
     }
 
     @PostMapping
-public ResponseEntity<Tennis> cadastrar(@RequestParam("nome") String nome,
-                                        @RequestParam("numero") int numero,
-                                        @RequestParam("cor") String cor,
-                                        @RequestParam("preco") double preco,
-                                        @RequestParam("estoque") int estoque,
-                                        @RequestParam("imagem") MultipartFile imagem) {
-    try {
-        
-        String fileName = UUID.randomUUID().toString() + "-" + imagem.getOriginalFilename();
-        Path path = Paths.get(uploadDir + "/" + fileName);
+    public ResponseEntity<Tennis> cadastrar(@RequestParam("nome") String nome,
+                                            @RequestParam("numero") int numero,
+                                            @RequestParam("cor") String cor,
+                                            @RequestParam("preco") double preco,
+                                            @RequestParam("estoque") int estoque,
+                                            @RequestParam("imagem") MultipartFile imagem) {
+        try {
+            // Cria um diretório se não existir
+            File directory = new File(uploadDir);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
 
-        File directory = new File(uploadDir);
-        if (!directory.exists()) {
-            directory.mkdirs();
+            // Gerar nome único para o arquivo
+            String fileName = UUID.randomUUID().toString() + "-" + imagem.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir, fileName);
+
+            // Salvar a imagem na pasta
+            Files.copy(imagem.getInputStream(), filePath);
+
+            // Criar novo objeto Tennis
+            Tennis novoTennis = new Tennis();
+            novoTennis.setNome(nome);
+            novoTennis.setNumero(numero);
+            novoTennis.setCor(cor);
+            novoTennis.setPreco(preco);
+            novoTennis.setEstoque(estoque);
+            novoTennis.setImagem("/uploads/" + fileName); // Caminho acessível pela API
+
+            Tennis tenisCadastrado = service.cadastrar(novoTennis);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(tenisCadastrado);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        Files.copy(imagem.getInputStream(), path);
-
-        Tennis novoTennis = new Tennis();
-        novoTennis.setNome(nome);
-        novoTennis.setNumero(numero);
-        novoTennis.setCor(cor);
-        novoTennis.setPreco(preco);
-        novoTennis.setEstoque(estoque);
-        novoTennis.setImagem(uploadDir + "/" + fileName); 
-
-        Tennis tenisCadastrado = service.cadastrar(novoTennis);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(tenisCadastrado);
-    } catch (IOException e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
-}
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         try {
-            service.excluir(id); 
-            return ResponseEntity.noContent().build();  
+            service.excluir(id);
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); 
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 }
