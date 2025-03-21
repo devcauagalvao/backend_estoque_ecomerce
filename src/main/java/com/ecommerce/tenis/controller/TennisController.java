@@ -7,13 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tennis")
@@ -21,10 +16,11 @@ import java.util.UUID;
 public class TennisController {
 
     private final TennisService service;
-    private final String uploadDir = "uploads";  
+    private final UploadService uploadService;
 
-    public TennisController(TennisService service) {
+    public TennisController(TennisService service, UploadService uploadService) {
         this.service = service;
+        this.uploadService = uploadService;
     }
 
     @GetMapping
@@ -33,52 +29,54 @@ public class TennisController {
         return ResponseEntity.ok(tenisList);
     }
 
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<Tennis>> listarPorUsuario(@PathVariable Long usuarioId) {
+        List<Tennis> tenisList = service.listarPorUsuario(usuarioId);
+        return ResponseEntity.ok(tenisList);
+    }
+
     @PostMapping
-    public ResponseEntity<Tennis> cadastrar(@RequestParam("nome") String nome,
-                                            @RequestParam("numero") int numero,
-                                            @RequestParam("cor") String cor,
-                                            @RequestParam("preco") double preco,
-                                            @RequestParam("estoque") int estoque,
-                                            @RequestParam("imagem") MultipartFile imagem) {
+    public ResponseEntity<?> cadastrar(@RequestParam("nome") String nome,
+                                       @RequestParam("numero") int numero,
+                                       @RequestParam("cor") String cor,
+                                       @RequestParam("preco") double preco,
+                                       @RequestParam("estoque") int estoque,
+                                       @RequestParam("imagem") MultipartFile imagem,
+                                       @RequestParam("usuarioId") Long usuarioId) {
         try {
-            // Cria um diretório se não existir
-            File directory = new File(uploadDir);
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
-
-            // Gerar nome único para o arquivo
-            String fileName = UUID.randomUUID().toString() + "-" + imagem.getOriginalFilename();
-            Path filePath = Paths.get(uploadDir, fileName);
-
-            // Salvar a imagem na pasta
-            Files.copy(imagem.getInputStream(), filePath);
-
-            // Criar novo objeto Tennis
-            Tennis novoTennis = new Tennis();
-            novoTennis.setNome(nome);
-            novoTennis.setNumero(numero);
-            novoTennis.setCor(cor);
-            novoTennis.setPreco(preco);
-            novoTennis.setEstoque(estoque);
-            novoTennis.setImagem("/uploads/" + fileName); // Caminho acessível pela API
-
-            Tennis tenisCadastrado = service.cadastrar(novoTennis);
+            String caminhoImagem = uploadService.salvarImagem(imagem);
+            
+            Tennis novoTennis = new Tennis(nome, numero, cor, preco, estoque, caminhoImagem);
+            Tennis tenisCadastrado = service.cadastrar(novoTennis, usuarioId);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(tenisCadastrado);
         } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao salvar a imagem: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erro ao cadastrar o tênis: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+    public ResponseEntity<String> excluir(@PathVariable Long id) {
         try {
             service.excluir(id);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro ao excluir: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/upload-imagem")
+    public ResponseEntity<String> uploadImagem(@RequestParam("file") MultipartFile file) {
+        try {
+            String caminhoImagem = uploadService.salvarImagem(file);
+            return ResponseEntity.ok(caminhoImagem);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao salvar imagem: " + e.getMessage());
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.ecommerce.tenis.model;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
@@ -16,6 +17,8 @@ public class Usuario {
 
     private String senha;
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tennis> tenis;
 
     public Usuario() {}
 
@@ -49,5 +52,13 @@ public class Usuario {
 
     public void setSenha(String senha) {
         this.senha = senha;
+    }
+
+    public List<Tennis> getTenis() {
+        return tenis;
+    }
+
+    public void setTenis(List<Tennis> tenis) {
+        this.tenis = tenis;
     }
 }

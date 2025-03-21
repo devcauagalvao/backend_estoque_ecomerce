@@ -20,18 +20,22 @@ public class Tennis {
     private double preco;  
     private int estoque;   
 
-    public Tennis() {}
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
-    public Tennis(String nome, String cor, int numero, String imagem, double preco, int estoque) {
+    public Tennis(String nome2, int numero2, String cor2, double preco2, int estoque2, String caminhoImagem) {}
+
+    public Tennis(String nome, String cor, int numero, String imagem, double preco, int estoque, Usuario usuario) {
         this.nome = nome;
         this.cor = cor;
         this.numero = numero;
         this.imagem = imagem;
         this.preco = preco;
         this.estoque = estoque;
+        this.usuario = usuario;
     }
 
-    
     public Long getId() {
         return id;
     }
@@ -86,5 +90,13 @@ public class Tennis {
 
     public void setEstoque(int estoque) {
         this.estoque = estoque;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }
