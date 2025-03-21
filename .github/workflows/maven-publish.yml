@@ -1,0 +1,69 @@
+name: Java Maven CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --host=localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Instalar Cliente MySQL
+        run: sudo apt-get install -y mysql-client
+
+      - name: Inicializar Banco de Dados com Dados de Teste
+        run: |
+          mysql -h 127.0.0.1 -uuser -ppassword testdb <<EOF
+          CREATE TABLE IF NOT EXISTS usuarios (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              nome VARCHAR(255) NOT NULL,
+              email VARCHAR(255) UNIQUE NOT NULL,
+              senha VARCHAR(255) NOT NULL
+          );
+
+          INSERT INTO usuarios (nome, email, senha) VALUES 
+          ('Admin', 'admin@email.com', '123456');
+
+          CREATE TABLE IF NOT EXISTS tenis (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              nome VARCHAR(255) NOT NULL,
+              numero INT NOT NULL,
+              cor VARCHAR(50) NOT NULL,
+              estoque INT NOT NULL,
+              preco DECIMAL(10,2) NOT NULL
+          );
+
+          INSERT INTO tenis (nome, numero, cor, estoque, preco) VALUES 
+          ('Nike Air Max', 42, 'Preto', 10, 499.99),
+          ('Adidas Superstar', 40, 'Branco', 15, 299.99);
+          EOF
+
+      - name: Configurar Maven
+        run: mvn -B package --file pom.xml
+
+      - name: Rodar Testes
+        run: mvn test
