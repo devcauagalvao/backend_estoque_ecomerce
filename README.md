@@ -33,12 +33,27 @@ O **Projeto Estoque** é um sistema web desenvolvido com **Spring Boot** no back
 com
 └── ecommerce
     └── tenis
+        ├── config
+        │   ├── SecurityConfig.java
+        │   └── WebConfig.java
         ├── controller
+        │   ├── AuthController.java
         │   └── TennisController.java
-        ├── service
         ├── model
+        │   ├── Tennis.java
+        │   └── Usuario.java
         ├── repository
-        └── application.properties
+        │   ├── TennisRepository.java
+        │   └── UsuarioRepository.java
+        ├── service
+        │   ├── TennisService.java
+        │   ├── UsuarioService.java
+        │   └── EcommerceTenisApplication.java
+resources
+├── static
+├── templates
+└── application.properties
+
 ```
 
 ## 🛠️ Instalação e Configuração
