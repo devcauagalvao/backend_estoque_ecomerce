@@ -17,13 +17,11 @@ public class Tennis {
     @Column(nullable = true) 
     private String imagem;
 
-    private double preco;  // Campo para armazenar o preço
-    private int estoque;   // Campo para armazenar o estoque
+    private double preco;  
+    private int estoque;   
 
-    // Construtor vazio
     public Tennis() {}
 
-    // Construtor com todos os campos
     public Tennis(String nome, String cor, int numero, String imagem, double preco, int estoque) {
         this.nome = nome;
         this.cor = cor;
@@ -33,7 +31,7 @@ public class Tennis {
         this.estoque = estoque;
     }
 
-    // Getters e Setters
+    
     public Long getId() {
         return id;
     }
