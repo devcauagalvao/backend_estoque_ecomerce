@@ -1,5 +1,6 @@
 package com.ecommerce.tenis.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference; // Importar para usar @JsonBackReference
 import jakarta.persistence.*;
 
 @Entity
@@ -14,28 +15,33 @@ public class Tennis {
     private String cor;
     private int numero;
 
-    @Column(nullable = true) 
+    @Column(nullable = true)
     private String imagem;
 
-    private double preco;  
-    private int estoque;   
+    private double preco;
+    private String marca;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
+    @JsonBackReference // Impede que o campo 'usuario' seja serializado na resposta JSON
     private Usuario usuario;
 
-    public Tennis(String nome2, int numero2, String cor2, double preco2, int estoque2, String caminhoImagem) {}
+    // Construtor padrão (obrigatório para o Hibernate)
+    public Tennis() {
+    }
 
-    public Tennis(String nome, String cor, int numero, String imagem, double preco, int estoque, Usuario usuario) {
+    // Construtor parametrizado com a ordem dos parâmetros corrigida
+    public Tennis(String nome, String cor, int numero, String imagem, double preco, String marca, Usuario usuario) {
         this.nome = nome;
         this.cor = cor;
         this.numero = numero;
-        this.imagem = imagem;
+        this.imagem = imagem; // Corrigido a ordem do parâmetro imagem
         this.preco = preco;
-        this.estoque = estoque;
+        this.marca = marca;
         this.usuario = usuario;
     }
 
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -68,14 +74,6 @@ public class Tennis {
         this.numero = numero;
     }
 
-    public String getImagem() {
-        return imagem;
-    }
-
-    public void setImagem(String imagem) {
-        this.imagem = imagem;
-    }
-
     public double getPreco() {
         return preco;
     }
@@ -84,12 +82,20 @@ public class Tennis {
         this.preco = preco;
     }
 
-    public int getEstoque() {
-        return estoque;
+    public String getImagem() {
+        return imagem;
     }
 
-    public void setEstoque(int estoque) {
-        this.estoque = estoque;
+    public void setImagem(String imagem) {
+        this.imagem = imagem;
+    }
+
+    public String getMarca() {
+        return marca;
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
     }
 
     public Usuario getUsuario() {

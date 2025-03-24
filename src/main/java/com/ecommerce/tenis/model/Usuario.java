@@ -1,5 +1,6 @@
 package com.ecommerce.tenis.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // Importar para usar @JsonIgnore
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -9,7 +10,7 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private String nome;
 
     @Column(unique = true)
@@ -18,9 +19,11 @@ public class Usuario {
     private String senha;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // Ignora a serialização da lista de tênis para evitar recursão infinita
     private List<Tennis> tenis;
 
-    public Usuario() {}
+    public Usuario() {
+    }
 
     public Long getId() {
         return id;
