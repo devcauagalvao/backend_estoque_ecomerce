@@ -29,4 +29,18 @@ public class UsuarioService {
         }
         return Optional.empty();
     }
+
+    // Novo método para atualizar a foto de perfil do usuário
+    public Optional<Usuario> atualizarFotoPerfil(Long id, String urlFoto) {
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+
+        if (usuarioOptional.isPresent()) {
+            Usuario usuario = usuarioOptional.get();
+            usuario.setFotoPerfil(urlFoto); // Atualiza a foto
+            usuarioRepository.save(usuario);
+            return Optional.of(usuario);
+        }
+
+        return Optional.empty(); // Retorna vazio se o usuário não for encontrado
+    }
 }

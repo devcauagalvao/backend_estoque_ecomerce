@@ -1,6 +1,6 @@
 package com.ecommerce.tenis.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore; // Importar para usar @JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -19,8 +19,11 @@ public class Usuario {
     private String senha;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore // Ignora a serialização da lista de tênis para evitar recursão infinita
+    @JsonIgnore 
     private List<Tennis> tenis;
+
+    // Novo campo para armazenar a foto de perfil
+    private String fotoPerfil;
 
     public Usuario() {
     }
@@ -63,5 +66,14 @@ public class Usuario {
 
     public void setTenis(List<Tennis> tenis) {
         this.tenis = tenis;
+    }
+
+    // Getter e Setter para a foto de perfil
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
     }
 }
