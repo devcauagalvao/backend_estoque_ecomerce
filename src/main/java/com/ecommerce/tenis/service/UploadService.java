@@ -15,18 +15,24 @@ import java.util.UUID;
 @Service
 public class UploadService {
 
-    private static final String UPLOAD_DIR = "uploads"; 
+    private static final String UPLOAD_DIR = "uploads";
 
-    // Conjunto de extensões permitidas para imagens
     private static final Set<String> EXTENSOES_PERMITIDAS = Set.of("jpg", "jpeg", "png", "gif", "bmp");
 
     public String salvarImagem(MultipartFile file) throws IOException {
-        // Verifica se o arquivo é uma imagem válida
+        return processarUpload(file, UPLOAD_DIR);
+    }
+
+    public String uploadProfilePicture(MultipartFile file) throws IOException {
+        return processarUpload(file, "uploads/perfil");
+    }
+
+    // Método genérico para salvar imagens em um diretório específico
+    private String processarUpload(MultipartFile file, String diretorio) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("O arquivo não pode estar vazio.");
         }
 
-        // Obtém a extensão do arquivo
         String fileName = file.getOriginalFilename();
         if (fileName == null) {
             throw new IllegalArgumentException("Nome do arquivo inválido.");
@@ -37,33 +43,27 @@ public class UploadService {
             throw new IllegalArgumentException("Formato de arquivo não permitido. Apenas imagens são aceitas.");
         }
 
-        // Cria o diretório se ele não existir
-        File directory = new File(UPLOAD_DIR);
+        // Cria o diretório se não existir
+        File directory = new File(diretorio);
         if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        // Gera um nome único para a imagem
+        // Gera um nome único para evitar conflitos
         String nomeUnico = UUID.randomUUID().toString() + "." + extensao;
-        Path filePath = Paths.get(UPLOAD_DIR, nomeUnico);
+        Path filePath = Paths.get(diretorio, nomeUnico);
 
-        // Salva o arquivo sem sobrescrever
+        // Salva a imagem no diretório correto
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        return "/uploads/" + nomeUnico;
+        return nomeUnico;
     }
 
-    // Método auxiliar para obter a extensão do arquivo
     private String getExtensao(String fileName) {
         int lastIndex = fileName.lastIndexOf(".");
         if (lastIndex == -1) {
             return "";
         }
         return fileName.substring(lastIndex + 1);
-    }
-
-    public String uploadProfilePicture(MultipartFile file) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'uploadProfilePicture'");
     }
 }
