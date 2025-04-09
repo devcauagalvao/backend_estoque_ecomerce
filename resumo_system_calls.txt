@@ -1,0 +1,52 @@
+
+Resumo de Questões sobre System Calls
+
+1. O que são system calls?
+- São interfaces entre os programas de usuário e o kernel do sistema operacional, usadas para solicitar serviços do SO, como acesso a arquivos, criação de processos, etc.
+
+2. Qual system call duplica o processo pai?
+- b) fork()
+
+3. Diferença entre exec() e fork():
+- fork() cria um novo processo duplicando o atual; exec() substitui o processo atual por um novo programa.
+
+4. Função da chamada getpid():
+- c) Obter o ID do processo atual
+
+5. Função da chamada kill():
+- Envia sinais a processos, como para encerrar.
+- Exemplo: kill(pid, SIGTERM); termina o processo com o ID pid.
+
+6. Três chamadas de sistema para arquivos:
+- open(): abre arquivos
+- read(): lê dados de arquivos
+- write(): escreve dados em arquivos
+
+7. Finalidade da lseek():
+- Move o ponteiro de leitura/escrita dentro de um arquivo aberto.
+
+8. O que acontece ao usar rmdir() em diretório não vazio?
+- Falha com erro; o diretório precisa estar vazio para ser removido.
+
+9. Qual chamada obtém info de arquivo/diretório?
+- c) stat()
+
+10. Diferença entre mkdir() e rmdir():
+- mkdir(): cria diretório
+- rmdir(): remove diretório vazio
+
+11. Como chmod() altera permissões?
+- Define permissões de arquivos ou diretórios.
+- Ex: chmod("arquivo.txt", 0644);
+
+12. Chamadas relacionadas à alocação de memória:
+- brk(), sbrk(), mmap() — usadas para alocar ou ajustar memória no processo.
+
+13. O que é descritor de arquivo?
+- É um inteiro que identifica um arquivo aberto. Usado por chamadas como read(), write() e close().
+
+14. Para que serve socket()?
+- Cria um ponto de comunicação para redes (TCP/UDP). Usado em comunicação entre processos via rede.
+
+15. Quando usar select() e poll()?
+- Para monitorar múltiplos descritores (como sockets) e saber quando estão prontos para leitura, escrita ou possuem erro — útil em servidores com conexões simultâneas.
